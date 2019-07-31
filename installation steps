@@ -22,3 +22,5 @@ firewall-cmd --reload
 firewall-cmd --list-all
 iptables -A INPUT -i lo -j ACCEPT
 netstat -altn |grep 443
+
+https://<ip_address_of_gitlab>
