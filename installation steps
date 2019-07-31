@@ -1,0 +1,24 @@
+yum install -y git lynx mutt 
+curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | bash
+yum install -y gitlab-ce
+openssl genrsa -out key.pem 4096
+openssl req -new -sha256 -key key.pem -out csr.csr
+openssl req -x509 -sha256 -days 3650 -key key.pem -in csr.csr -out certificate.pem
+
+mkdir /etc/gitlab/ssl
+chmod 700 /etc/gitlab/ssl
+cp *.pem /etc/gitlab/ssl
+vim /etc/gitlab/gitlab.rb
+==> external_url 'http://gitlab.example.com' → 'https://192.168.56.101' 
+==>    nginx['ssl_certificate'] = "/etc/gitlab/ssl/certificate.pem"
+==>    nginx['ssl_certificate_key'] = "/etc/gitlab/ssl/key.pem"
+
+gitlab-ctl reconfigure
+
+firewall-cmd --permanent --add-service http
+firewall-cmd --permanent --add-service https
+systemctl reload firewalld
+firewall-cmd --reload
+firewall-cmd --list-all
+iptables -A INPUT -i lo -j ACCEPT
+netstat -altn |grep 443
